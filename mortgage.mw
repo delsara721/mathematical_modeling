@@ -1,0 +1,13 @@
+mortgage:=proc(price,down,rate,year)   #program definition
+   local n,A,R;                        #local variables - used in payment equation directly 
+   local realRate, realDown;           #local variables - for converting to non-percent values
+
+   realRate:= (rate/100)/12;           #converting rate to non-percent values
+   realDown:= down/100;                #converting down rate to non-percent values
+   n:=year*12;                         #calculating monthly 
+   A:=price-(realDown*price);          #the amount of mortgage is down% of actual value
+   R:=(A*realRate)/(1-(1+realRate)^(-n));
+                                       #printing output
+   print(`The monthly payment is`);
+   print(R);
+end;

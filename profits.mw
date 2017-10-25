@@ -1,0 +1,70 @@
+with(stats):with(random):
+DailyProfit:=proc(m)
+#N is fixed number of passerby
+#sucess: variable for counting successes
+#area- variable for storing area under curve
+#area- area of the box
+#i - counter for loop
+#n-number of iterations 
+#b-variable for upper value of data
+#randomX,randomY - variables for storign random x,y for k<=m
+#randomx2,randomy2 - variables for storing random x,y, for k>m
+#E-integral function 
+
+local N,success,area,i,randomX,randomY,n,areaB,E,b, randomx2,randomy2; 
+
+               #initialize variables as necessary
+ N:=5000;      #given number for N
+ n:=1000;     #iteration best at 10000
+ success:=0; 
+ b:=200; #figured out in part 1
+ areaB:=200*200;   #b*b
+               
+ for i from 0 to n do
+               #for k<=m
+  randomX:=uniform[0,m]();
+  randomY:=uniform[0,b]();
+               #for k>m
+  randomx2:=uniform[m+1,N]();
+  randomy2:=uniform[0,b]();
+               #calculate function
+  E:=((0.75*randomX-0.5*m)/b)+((0.25*m)/b);
+               #calculate if success or not
+  if randomY<evalf(E) then
+   success:=success+1;
+  fi;od;       #end if, end for
+               #evaluate area under curve
+ area:=evalf(success/n)*areaB;
+               #print results
+ return(area);
+end;
+
+AverageProfit:=proc(m,days)
+            #sum-variable that holds the value of each day
+            #i-for loop counter
+            #average-variable holds average for "days"
+ local sum,i,average;
+            #initialize sum to zero (incremented)
+ sum:=0;
+ for i from 0 to days do
+            #add to sum every day
+  sum:=sum+DailyProfit(m);
+ end;
+            #calculate and store average
+ average:=sum/days;
+            #print results
+ return(average);
+end;
+
+graph1:=proc()
+local m,i,counter,Expected,L,x;
+Expected:=array[1..100];
+counter:=50;
+for i from 1 to 100 do
+Expected[i]:=AverageProfit(counter,7);
+counter:=counter+1;
+end;
+L:=[seq([x,Expected[x]],x=1..100)];
+plot(L,style=point,symbol=cross);
+end;
+

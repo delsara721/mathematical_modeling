@@ -1,0 +1,168 @@
+observed:=proc(s0,s1)
+    #i: for loop counter
+    #changed: counter for number of changed bases
+    #intialize changed to zero before starting for loop
+    #l: length of one of s0(string)
+  local i,changed,l; 
+  changed:=0; 
+  l:=length(s0);
+    #for loop that increments changed
+    #checks if base in s0 and s1 had changed
+  for i from 1 to l do 
+    if s0[i]<>s1[i] then
+      changed:=changed+1;
+  fi;
+  end:
+  return(changed);
+end:
+
+
+with(stats):with(random):
+ancestor:=proc(n)
+   #i: for loop counter
+   #k:will hold random # btwn 1-4
+   #s:ancestor string-empty beginning
+   #AGCT:contains the 4 bases
+  local i,k,s,AGCT;
+  s:="";
+  AGCT:="AGCT";
+  for i from 1 to n do
+   #select random numbers
+    k:=rand(1..4);
+   #concatenate selected base to ancestor 
+    s:=cat(s,AGCT[k()]);
+  end;
+   #return ancestor string
+  return(s);
+end:
+
+
+mutate1:=proc(alpha,n)
+   #A,G,C,T;string without one base
+   #k:holds random float number from 0 to 1
+   #used to figure out probability of mutation occuring
+   #x:holds random int number btwen 1-3
+   #i:for loop counter
+   #s:ancestor string - set to ancestor function
+   #s1:mutated string - empty in beginning
+ local A,G,C,T,k,x,i,s,s1;
+   #A,G,C,T will not contain their variable namme base
+ A:="GCT";
+ G:="ACT";
+ C:="AGT";
+ T:="AGC";
+ s:=ancestor(n);
+ s1:="";
+ for i from 1 to n do
+  k:=rand(0.0..1.0);
+   #k chooses random numbers btwn 0.0 to 1.0
+   #this is used to see if base has mutated or not
+   #first condition if k>alpha, then base stays same
+  if k()>alpha then
+   s1:=cat(s1,s[i]);
+  else
+   #base chnages to one of the other 3 bases
+   #choose random number 1,2,3
+   #dependig on what the ancestor base is
+   #string A,G,C,T are chosen and from these 
+   #random bases are chosen to put into mutated string
+    x:=rand(1..3);
+    if s[i]="A" then
+     s1:=cat(s1,A[x()]);
+    elif s[i]="G" then
+     s1:=cat(s1,G[x()]);
+    elif s[i]="C" then
+     s1:=cat(s1,C[x()]);
+    else
+     s1:=cat(s1,T[x()]);
+    fi
+  fi;
+ end;
+   #print s for comparison
+   #return mutated s1
+ print(s);
+ return(s1);
+end:
+
+
+mutate2:=proc(alpha,n,s)
+   #A,G,C,T;string without one base
+   #k:holds random float number from 0 to 1
+   #used to figure out probability of mutation occuring
+   #x:holds random int number btwen 1-3
+   #i:for loop counter
+   #s1:mutated string - empty in beginning
+ local A,G,C,T,k,x,i,s1;
+   #A,G,C,T will not contain their variable namme base
+ A:="GCT";
+ G:="ACT";
+ C:="AGT";
+ T:="AGC";
+ s1:="";
+ for i from 1 to n do
+  k:=rand(0.0..1.0);
+   #k chooses random numbers btwn 0.0 to 1.0
+   #this is used to see if base has mutated or not
+   #first condition if k>alpha, then base stays same
+ if k()<=1 and k()>alpha then
+  s1:=cat(s1,s[i]);
+ else
+   #base chnages to one of the other 3 bases
+   #choose random number 1,2,3
+   #dependig on what the ancestor base is
+   #string A,G,C,T are chosen and from these 
+   #random bases are chosen to put into mutated string
+ x:=rand(1..3);
+  if s[i]="A" then
+   s1:=cat(s1,A[x()]);
+  elif s[i]="G" then
+   s1:=cat(s1,G[x()]);
+  elif s[i]="C" then
+   s1:=cat(s1,C[x()]);
+  else
+   s1:=cat(s1,T[x()]);
+  fi;
+ fi;
+end;
+   #return mutated s1
+return(s1);
+end:
+
+
+mutate:=proc(alpha,N,t)
+   #original: holds ancestor string
+   #s1,s2: strings that will hold mutated strings
+   #totalR: total real observed mutations, initialize to 0
+   #p: # of mutations from ancestor to last string
+   #p1: p/N
+   #i:for loop counter
+   #T:estimated base substitution
+   #d:juke-cantor distance variable
+ local original,s1,s2,totalR,p,p1,i,T,d;
+ totalR:=0;
+ original:=ancestor(N);
+   #make copy of original to put into mutate2
+ s1:=original;
+ for i from 1 to t do
+   #s2 is mutated string given s1 predecessor
+   s2:=mutate2(alpha,N,s1);
+   #increment real mutation counter total
+   totalR:=totalR+observed(s1,s2);
+   #copy s2 to s1 so that s2 becomes predecessor of new generation
+   s1:=s2;
+ end;
+   #mutation differnce comparing ancestor to last string
+ p:=observed(original,s2);
+ p1:=evalf(p/N);
+   #total number of estimated base subs calculations
+ T:=evalf((ln(1-(4/3)*p1))/((-4/3)*alpha));
+   #Jukes-Cantor distance calculations
+ d:=evalf(-3/4)*ln(1-(4/3)*p1);
+   #print results
+ print(original);
+ print(s2);
+ printf("\nNumber of base substitutions %f",p );
+ printf("\nNumber of observed Substitutions: %f",totalR);
+ printf("\nJukes-Cantor Distance: %f",d);
+ printf("\nThe number of estimated base substitutions: %f",T);
+end:
